@@ -1,60 +1,62 @@
-﻿using System;
+﻿using CSharp_taskManagement.DataAccess;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Serialization.Json;
+using System.Text;
+using System.Web;
 using System.Web.Http;
 
 namespace CSharp_taskManagement.Controllers
 {
-    public class Task
-    {
-        public uint? Id { get; } // populate from db, else null for insert
-        public string Name { get; set; }
-    }
-    public class User
-    {
-        public uint? Id { get; }
-        public string Name { get; set; }
-    }
-
-    public interface ITaskRepository
-    {
-
-    }
-
-    public class TaskRepository : ITaskRepository
-    {
-
-    }
-
     public class TasksController : ApiController
     {
-        private readonly ITaskRepository _tasks = new TaskRepository();
+        private readonly ITaskRepository _taskRepository = new TaskRepository();
 
         public TasksController()
         {
 
         }
 
-        public TasksController(ITaskRepository tasks)
+        public TasksController(ITaskRepository taskRepository)
         {
-            _tasks = tasks;
+            _taskRepository = taskRepository;
         }
 
-        public string[] Get()
+        public Task[] Get()
         {
-            return new string[]
-            {
-                "asdf",
-                "asdsf"
-            };
+            var tasks = _taskRepository.FetchTasks();
+
+            return tasks.ToArray();
         }
 
+        public Task Get(uint id)
+        {
+            var task = _taskRepository.FetchTask(id);
+
+            return task;
+        }
+        
         [HttpPut]
-        public void Put(int id, [FromBody] string value)
+        public HttpResponseMessage Put(int id, Task jsonBody)
         {
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
 
+        [HttpPost]
+        public HttpResponseMessage Post(int id, Task value)
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+
+        [HttpDelete]
+        public HttpResponseMessage Delete(int id)
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 }
