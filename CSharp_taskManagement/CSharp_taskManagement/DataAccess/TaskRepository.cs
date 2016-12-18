@@ -33,6 +33,22 @@ namespace CSharp_taskManagement.DataAccess
         public string Status { get; set; }
         //[DataMember]
         public uint? UserId { get; set; }
+
+        public bool IsEmpty()
+        {
+            if (Id == null
+                && String.IsNullOrEmpty(Name)
+                && String.IsNullOrEmpty(Description)
+                && String.IsNullOrEmpty(Status)
+                && UserId == null) // not worried about dates, because without content, dates are useless.
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
     //[DataContract]
     public class User
@@ -62,6 +78,9 @@ namespace CSharp_taskManagement.DataAccess
     {
         List<Task> FetchTasks();
         Task FetchTask(uint id);
+        bool CreateTask(Task task);
+        bool UpdateTask(Task task);
+        bool RemoveTask(uint id);
     }
 
     public class TaskRepository : ITaskRepository
@@ -70,7 +89,7 @@ namespace CSharp_taskManagement.DataAccess
         private MySqlConnection connection;
 
         public TaskRepository()
-            :this("")
+            : this("")
         {
 
         }
@@ -83,7 +102,7 @@ namespace CSharp_taskManagement.DataAccess
             }
             connection = new MySqlConnection(_connectionString);
         }
-        
+
         public List<Task> FetchTasks()
         {
             try
@@ -105,11 +124,11 @@ namespace CSharp_taskManagement.DataAccess
                     while (reader.Read())
                     {
                         var task = new Task(reader.GetUInt32("id"), reader.GetDateTime("creationDate"));
-                        task.Name = reader.IsDBNull(namePosition) 
-                            ? string.Empty 
+                        task.Name = reader.IsDBNull(namePosition)
+                            ? string.Empty
                             : reader.GetString("name");
                         task.Description = reader.IsDBNull(descriptionPosition)
-                            ? string.Empty 
+                            ? string.Empty
                             : reader.GetString("description");
                         task.DueDate = reader.IsDBNull(dueDatePosition)
                             ? new DateTime()
@@ -118,7 +137,7 @@ namespace CSharp_taskManagement.DataAccess
                             ? string.Empty
                             : reader.GetString("status");
                         task.UserId = reader.IsDBNull(userIdPosition)
-                            ? (uint?) null
+                            ? (uint?)null
                             : reader.GetUInt32("user_id");
                         tasks.Add(task);
                     }
@@ -190,6 +209,107 @@ namespace CSharp_taskManagement.DataAccess
                 }
             }
             return new Task();
+        }
+
+        public bool CreateTask(Task task)
+        {
+            //if (task.Id != null
+            //    && !FetchTask((uint)task.Id).IsEmpty())
+            //{
+            //    UpdateTask(task);
+            //}
+            //else
+            //{
+            try
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "Insert into task_user.task (name, description, dueDate) values (@name, @description, @dueDate)";
+                command.Parameters.AddWithValue("@name", task.Name);
+                command.Parameters.AddWithValue("@description", task.Description);
+                command.Parameters.AddWithValue("@dueDate", task.DueDate);
+
+                var rowCount = command.ExecuteNonQuery();
+
+                connection.Close();
+
+                return (rowCount < 1) ? false : true;
+            }
+            catch (Exception ex)
+            {
+                if (connection.State.Equals(System.Data.ConnectionState.Open))
+                {
+                    connection.Close();
+                }
+                return false;
+            }
+            //}
+        }
+
+        public bool UpdateTask(Task task)
+        {
+            //if (task.Id == null
+            //    && FetchTask((uint)task.Id).IsEmpty())
+            //{
+            //    CreateTask(task);
+            //}
+            //else
+            //{
+            try
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "Update task_user.task set name = @name, description = @description, dueDate = @dueDate, creationDate = @creationDate, status = @status, user_id = @user_id";
+                command.Parameters.AddWithValue("@name", task.Name);
+                command.Parameters.AddWithValue("@description", task.Description);
+                command.Parameters.AddWithValue("@dueDate", task.DueDate);
+                command.Parameters.AddWithValue("@creationDate", task.CreationDate);
+                command.Parameters.AddWithValue("@status", task.Status);
+                command.Parameters.AddWithValue("@user_id", task.UserId);
+
+                var rowCount = command.ExecuteNonQuery();
+
+                connection.Close();
+
+                return (rowCount < 1) ? false : true;
+            }
+            catch (Exception ex)
+            {
+                if (connection.State.Equals(System.Data.ConnectionState.Open))
+                {
+                    connection.Close();
+                }
+                return false;
+            }
+            //}
+        }
+
+        public bool RemoveTask(uint id)
+        {
+            try
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "Delete from task_user.task where id = @id";
+                command.Parameters.AddWithValue("@id", id);
+
+                var rowCount = command.ExecuteNonQuery();
+
+                connection.Close();
+
+                return (rowCount < 1) ? false : true;
+            }
+            catch (Exception ex)
+            {
+                if (connection.State.Equals(System.Data.ConnectionState.Open))
+                {
+                    connection.Close();
+                }
+                return false;
+            }
         }
     }
 }

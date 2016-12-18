@@ -40,23 +40,29 @@ namespace CSharp_taskManagement.Controllers
 
             return task;
         }
-        
+
         [HttpPut]
-        public HttpResponseMessage Put(int id, Task jsonBody)
+        public HttpResponseMessage Put(Task task)
         {
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            var created = _taskRepository.CreateTask(task);
+
+            return new HttpResponseMessage((created) ? HttpStatusCode.OK : HttpStatusCode.Forbidden);
         }
 
         [HttpPost]
-        public HttpResponseMessage Post(int id, Task value)
+        public HttpResponseMessage Post(Task task)
         {
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            var created = _taskRepository.UpdateTask(task);
+
+            return new HttpResponseMessage((created) ? HttpStatusCode.OK : HttpStatusCode.Forbidden);
         }
 
         [HttpDelete]
-        public HttpResponseMessage Delete(int id)
+        public HttpResponseMessage Delete(uint id)
         {
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            var removed = _taskRepository.RemoveTask(id);
+
+            return new HttpResponseMessage((removed) ? HttpStatusCode.OK : HttpStatusCode.Forbidden);
         }
     }
 }
