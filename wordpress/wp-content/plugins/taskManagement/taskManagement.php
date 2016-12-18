@@ -8,6 +8,8 @@
     // Method: POST, PUT, GET etc
     // Data: array("param" => "value") ==> index.php?param=value
 
+    global $tasks, $task;
+
     function CallAPI($method, $url, $data = false)
     {
         $curl = curl_init();
@@ -53,7 +55,7 @@
 
     //return {id, name, description, dueDate, creationDate, status}
     function fetch_task( $id ) {
-        $task = CallAPI("GET", "http://localhost/taskManagement/api/tasks" . $id);
+        $task = CallAPI("GET", "http://localhost/taskManagement/api/tasks/" . $id);
 
         echo $task;
     }

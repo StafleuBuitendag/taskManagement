@@ -1,25 +1,24 @@
-﻿using CSharp_taskManagement.Models;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Web;
+using CSharp_taskManagement.Models;
 
 namespace CSharp_taskManagement.DataAccess
 {
-    public class TaskRepository : IUserTaskRepository
+    public class UserRepository : IUserTaskRepository
     {
         private string _connectionString = "Data Source=localhost; Port=3306; User ID=root; Password=devbuntu; Database=task_user";
         private MySqlConnection connection;
 
-        public TaskRepository()
+        public UserRepository()
             : this("")
         {
 
         }
 
-        public TaskRepository(string connectionString)
+        public UserRepository(string connectionString)
         {
             if (!String.IsNullOrEmpty(connectionString))
             {
@@ -27,50 +26,51 @@ namespace CSharp_taskManagement.DataAccess
             }
             connection = new MySqlConnection(_connectionString);
         }
-
-        public List<Task> FetchTasks()
+        
+        public List<User> FetchUsers()
         {
             try
             {
                 connection.Open();
 
-                var tasks = new List<Task>();
+                var users = new List<User>();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "Select * from task_user.task";
+                command.CommandText = "Select * from task_user.task_user";
 
                 using (var reader = command.ExecuteReader())
                 {
                     int namePosition = reader.GetOrdinal("name");
-                    int descriptionPosition = reader.GetOrdinal("description");
-                    int dueDatePosition = reader.GetOrdinal("dueDate");
+                    int surnamePosition = reader.GetOrdinal("surname");
                     int statusPosition = reader.GetOrdinal("status");
-                    int userIdPosition = reader.GetOrdinal("user_id");
+                    int emailPosition = reader.GetOrdinal("email");
+                    int creationDatePosition = reader.GetOrdinal("creationDate");
+
                     while (reader.Read())
                     {
-                        var task = new Task(reader.GetUInt32("id"), reader.GetDateTime("creationDate"));
-                        task.Name = reader.IsDBNull(namePosition)
+                        var user = new User(reader.GetUInt32("id"), reader.GetDateTime("dateLastLogin"));
+                        user.Name = reader.IsDBNull(namePosition)
                             ? string.Empty
                             : reader.GetString("name");
-                        task.Description = reader.IsDBNull(descriptionPosition)
+                        user.Surname = reader.IsDBNull(surnamePosition)
                             ? string.Empty
-                            : reader.GetString("description");
-                        task.DueDate = reader.IsDBNull(dueDatePosition)
-                            ? new DateTime()
-                            : reader.GetDateTime("dueDate");
-                        task.Status = reader.IsDBNull(statusPosition)
+                            : reader.GetString("surname");
+                        user.Status = reader.IsDBNull(statusPosition)
                             ? string.Empty
                             : reader.GetString("status");
-                        task.UserId = reader.IsDBNull(userIdPosition)
-                            ? (uint?)null
-                            : reader.GetUInt32("user_id");
-                        tasks.Add(task);
+                        user.Email = reader.IsDBNull(emailPosition)
+                            ? string.Empty
+                            : reader.GetString("email");
+                        user.CreationDate = reader.IsDBNull(creationDatePosition)
+                            ? new DateTime()
+                            : reader.GetDateTime("creationDate");
+                        users.Add(user);
                     }
                 }
 
                 connection.Close();
 
-                return tasks;
+                return users;
             }
             catch (Exception ex)
             {
@@ -79,52 +79,52 @@ namespace CSharp_taskManagement.DataAccess
                     connection.Close();
                 }
             }
-            return new List<Task>();
+            return new List<User>();
         }
 
-        public Task FetchTask(uint id)
+        public User FetchUser(uint id)
         {
             try
             {
                 connection.Open();
 
-                var task = new Task();
+                var user = new User();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "Select * from task_user.task where id = @id";
+                command.CommandText = "Select * from task_user.task_user where id = @id";
                 command.Parameters.AddWithValue("@id", id);
 
                 using (var reader = command.ExecuteReader())
                 {
                     int namePosition = reader.GetOrdinal("name");
-                    int descriptionPosition = reader.GetOrdinal("description");
-                    int dueDatePosition = reader.GetOrdinal("dueDate");
+                    int surnamePosition = reader.GetOrdinal("surname");
                     int statusPosition = reader.GetOrdinal("status");
-                    int userIdPosition = reader.GetOrdinal("user_id");
+                    int emailPosition = reader.GetOrdinal("email");
+                    int creationDatePosition = reader.GetOrdinal("creationDate");
 
                     reader.Read();
 
-                    task = new Task(reader.GetUInt32("id"), reader.GetDateTime("creationDate"));
-                    task.Name = reader.IsDBNull(namePosition)
+                    user = new User(reader.GetUInt32("id"), reader.GetDateTime("dateLastLogin"));
+                    user.Name = reader.IsDBNull(namePosition)
                         ? string.Empty
                         : reader.GetString("name");
-                    task.Description = reader.IsDBNull(descriptionPosition)
+                    user.Surname = reader.IsDBNull(surnamePosition)
                         ? string.Empty
-                        : reader.GetString("description");
-                    task.DueDate = reader.IsDBNull(dueDatePosition)
-                        ? new DateTime()
-                        : reader.GetDateTime("dueDate");
-                    task.Status = reader.IsDBNull(statusPosition)
+                        : reader.GetString("surname");
+                    user.Status = reader.IsDBNull(statusPosition)
                         ? string.Empty
                         : reader.GetString("status");
-                    task.UserId = reader.IsDBNull(userIdPosition)
-                        ? (uint?)null
-                        : reader.GetUInt32("user_id");
+                    user.Email = reader.IsDBNull(emailPosition)
+                        ? string.Empty
+                        : reader.GetString("email");
+                    user.CreationDate = reader.IsDBNull(creationDatePosition)
+                        ? new DateTime()
+                        : reader.GetDateTime("creationDate");
                 }
 
                 connection.Close();
 
-                return task;
+                return user;
             }
             catch (Exception ex)
             {
@@ -133,20 +133,21 @@ namespace CSharp_taskManagement.DataAccess
                     connection.Close();
                 }
             }
-            return new Task();
+            return new User();
         }
 
-        public bool CreateTask(Task task)
+        public bool CreateUser(User user)
         {
             try
             {
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "Insert into task_user.task (name, description, dueDate) values (@name, @description, @dueDate)";
-                command.Parameters.AddWithValue("@name", task.Name);
-                command.Parameters.AddWithValue("@description", task.Description);
-                command.Parameters.AddWithValue("@dueDate", task.DueDate);
+                command.CommandText = "Insert into task_user.task_user (name, surname, status, email) values (@name, @surname, @status, @email)";
+                command.Parameters.AddWithValue("@name", user.Name);
+                command.Parameters.AddWithValue("@surname", user.Surname);
+                command.Parameters.AddWithValue("@status", user.Status);
+                command.Parameters.AddWithValue("@email", user.Email);
 
                 var rowCount = command.ExecuteNonQuery();
 
@@ -164,20 +165,20 @@ namespace CSharp_taskManagement.DataAccess
             }
         }
 
-        public bool UpdateTask(Task task)
+        public bool UpdateUser(User user)
         {
             try
             {
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "Update task_user.task set name = @name, description = @description, dueDate = @dueDate, creationDate = @creationDate, status = @status, user_id = @user_id";
-                command.Parameters.AddWithValue("@name", task.Name);
-                command.Parameters.AddWithValue("@description", task.Description);
-                command.Parameters.AddWithValue("@dueDate", task.DueDate);
-                command.Parameters.AddWithValue("@creationDate", task.CreationDate);
-                command.Parameters.AddWithValue("@status", task.Status);
-                command.Parameters.AddWithValue("@user_id", task.UserId);
+                command.CommandText = "Update task_user.task_user set name = @name, surname = @surname, status = @status, password = @password, email = @email, dateLastLogin = @dateLastLogin";
+                command.Parameters.AddWithValue("@name", user.Name);
+                command.Parameters.AddWithValue("@surname", user.Surname);
+                command.Parameters.AddWithValue("@status", user.Status);
+                command.Parameters.AddWithValue("@password", user.Password);
+                command.Parameters.AddWithValue("@email", user.Email);
+                command.Parameters.AddWithValue("@dateLastLogin", user.DateLastLogin);
 
                 var rowCount = command.ExecuteNonQuery();
 
@@ -195,14 +196,14 @@ namespace CSharp_taskManagement.DataAccess
             }
         }
 
-        public bool RemoveTask(uint id)
+        public bool RemoveUser(uint id)
         {
             try
             {
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "Delete from task_user.task where id = @id";
+                command.CommandText = "Delete from task_user.user where id = @id";
                 command.Parameters.AddWithValue("@id", id);
 
                 var rowCount = command.ExecuteNonQuery();
@@ -221,27 +222,28 @@ namespace CSharp_taskManagement.DataAccess
             }
         }
 
-        public List<User> FetchUsers()
+
+        public List<Task> FetchTasks()
         {
             throw new NotImplementedException();
         }
 
-        public User FetchUser(uint id)
+        public Task FetchTask(uint id)
         {
             throw new NotImplementedException();
         }
 
-        public bool CreateUser(User user)
+        public bool CreateTask(Task task)
         {
             throw new NotImplementedException();
         }
 
-        public bool UpdateUser(User user)
+        public bool UpdateTask(Task task)
         {
             throw new NotImplementedException();
         }
 
-        public bool RemoveUser(uint id)
+        public bool RemoveTask(uint id)
         {
             throw new NotImplementedException();
         }

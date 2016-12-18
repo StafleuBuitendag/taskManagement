@@ -14,46 +14,46 @@ using System.Web.Http;
 
 namespace CSharp_taskManagement.Controllers
 {
-    public class TasksController : ApiController
+    public class UsersController : ApiController
     {
-        private readonly IUserTaskRepository _taskRepository = new TaskRepository();
+        private readonly IUserTaskRepository _userRepository = new UserRepository();
 
-        public TasksController()
+        public UsersController()
         {
 
         }
 
-        public TasksController(IUserTaskRepository taskRepository)
+        public UsersController(IUserTaskRepository userRepository)
         {
-            _taskRepository = taskRepository;
+            _userRepository = userRepository;
         }
 
-        public Task[] Get()
+        public User[] Get()
         {
-            var tasks = _taskRepository.FetchTasks();
+            var users = _userRepository.FetchUsers();
 
-            return tasks.ToArray();
+            return users.ToArray();
         }
 
-        public Task Get(uint id)
+        public User Get(uint id)
         {
-            var task = _taskRepository.FetchTask(id);
+            var task = _userRepository.FetchUser(id);
 
             return task;
         }
 
         [HttpPut]
-        public HttpResponseMessage Put(Task task)
+        public HttpResponseMessage Put(User user)
         {
-            var created = _taskRepository.CreateTask(task);
+            var created = _userRepository.CreateUser(user);
 
             return new HttpResponseMessage((created) ? HttpStatusCode.OK : HttpStatusCode.Forbidden);
         }
 
         [HttpPost]
-        public HttpResponseMessage Post(Task task)
+        public HttpResponseMessage Post(User user)
         {
-            var created = _taskRepository.UpdateTask(task);
+            var created = _userRepository.UpdateUser(user);
 
             return new HttpResponseMessage((created) ? HttpStatusCode.OK : HttpStatusCode.Forbidden);
         }
@@ -61,7 +61,7 @@ namespace CSharp_taskManagement.Controllers
         [HttpDelete]
         public HttpResponseMessage Delete(uint id)
         {
-            var removed = _taskRepository.RemoveTask(id);
+            var removed = _userRepository.RemoveUser(id);
 
             return new HttpResponseMessage((removed) ? HttpStatusCode.OK : HttpStatusCode.Forbidden);
         }
