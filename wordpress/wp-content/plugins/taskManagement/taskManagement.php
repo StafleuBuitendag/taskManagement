@@ -46,39 +46,57 @@
 
     //return [{id, name, status}]
     function fetch_tasks() {
-        $tasks = CallAPI("GET", "http://localhost/taskManagement/api/tasks");
+        $tasks = json_decode(CallAPI("GET", "http://localhost/taskManagement/api/tasks"));
 
-
-        echo $tasks;//"[{id, name, status}]";
-        return $tasks;
+        $displayBlock = "<div>";
+        foreach ($tasks as $current_task) {
+            $displayBlock = $displayBlock . "<div>";
+            $displayBlock = $displayBlock . "<div>Name: {$current_task->Name}</div>";
+            $displayBlock = $displayBlock . "<div>Description: {$current_task->Description}</div>";
+            $displayBlock = $displayBlock . "<div>Due Date: {$current_task->DueDate}</div>";
+            $displayBlock = $displayBlock . "<div>Creation Date: {$current_task->CreationDate}</div>";
+            $displayBlock = $displayBlock . "<div>Status: {$current_task->Status}</div>";
+            $displayBlock = $displayBlock . "</div><br>";
+        }
+        $displayBlock = $displayBlock . "</div>";
+        return $displayBlock;
     }
 
     //return {id, name, description, dueDate, creationDate, status}
-    function fetch_task( $id ) {
-        $task = CallAPI("GET", "http://localhost/taskManagement/api/tasks/" . $id);
+    function fetch_task( $atts ) {
+        $task = json_decode(CallAPI("GET", "http://localhost/taskManagement/api/tasks/" . $atts["id"]));
 
-        echo $task;
+        $displayBlock = "<div>";
+        
+        $displayBlock = $displayBlock . "<div>Name: {$task->Name}</div>";
+        $displayBlock = $displayBlock . "<div>Description: {$task->Description}</div>";
+        $displayBlock = $displayBlock . "<div>Due Date: {$task->DueDate}</div>";
+        $displayBlock = $displayBlock . "<div>Status: {$task->Status}</div>";
+        $displayBlock = $displayBlock . "</div>";
+
+        // $displayBlock = CallAPI("GET", "http://localhost/taskManagement/api/tasks/" . $atts["id"]);
+        return $displayBlock;
     }
 
     //return {id, name, description, dueDate, creationDate, status}
-    function update_task( $task ) {
-        $success = CallAPI("POST", "http://localhost/taskManagement/api/tasks", $task);
+    function update_task( $atts ) {
+        $success = CallAPI("POST", "http://localhost/taskManagement/api/tasks", $atts);
 
-        echo $success;
+        return $success;
     }
 
     //return {id, name, description, dueDate, creationDate, status}
     // $name, $description, $dueDate, $status
-    function create_task( $task ) {
-        $success = CallAPI("PUT", "http://localhost/taskManagement/api/tasks", $task);
+    function create_task( $atts ) {
+        $success = CallAPI("PUT", "http://localhost/taskManagement/api/tasks", $atts);
 
-        echo $success;
+        return $success;
     }
 
-    function remove_task( $id ) {
-        $success = CallAPI("DELETE", "http://localhost/taskManagement/api/tasks", $id);
+    function remove_task( $atts ) {
+        $success = CallAPI("DELETE", "http://localhost/taskManagement/api/tasks", $atts["id"]);
 
-        echo $success;
+        return $success;
     }
 
     // add_action( 'admin_notices', 'fetch_tasks' );
