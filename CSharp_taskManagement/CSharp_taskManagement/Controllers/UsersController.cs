@@ -53,9 +53,9 @@ namespace CSharp_taskManagement.Controllers
         [HttpPost]
         public HttpResponseMessage Post(User user)
         {
-            var created = _userRepository.UpdateUser(user);
+            var updated = _userRepository.UpdateUser(user);
 
-            return new HttpResponseMessage((created) ? HttpStatusCode.OK : HttpStatusCode.Forbidden);
+            return new HttpResponseMessage((updated) ? HttpStatusCode.OK : HttpStatusCode.Forbidden);
         }
 
         [HttpDelete]
